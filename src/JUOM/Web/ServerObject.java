@@ -1,7 +1,6 @@
 package JUOM.Web;
 
 import JUOM.JHTML.JHTML;
-import JUOM.UniversalObjects.Universal;
 import JUOM.UniversalObjects.UniversalException;
 import JUOM.UniversalObjects.UniversalObject;
 import JUOM.UniversalObjects.WebMethod;
@@ -19,8 +18,6 @@ import static JUOM.Web.Resource.*;
 public abstract class ServerObject extends UniversalObject {
 
     protected ServerObject parent = null;
-
-
 
     protected final String nextURLPart(String url) {
 
@@ -81,7 +78,7 @@ public abstract class ServerObject extends UniversalObject {
 
 
 
-    protected final void parseParams(Client c, String paramString) throws IOException {
+    protected final void parseParams(Client c, String paramString) {
 
         try {
 
@@ -189,16 +186,18 @@ public abstract class ServerObject extends UniversalObject {
 
     protected abstract JHTML objectOrResourceNotFound(String message);
 
-    protected void handleURL(Client c, String url) throws IOException {
+    protected void handleURL(Client c, String url) throws CompleteClientResponse{
         if(nextURLPart(url).isEmpty()) {
             parseParams(c, url);
         } else {
             try {
                 c.setResponse(handleResource(url));
             } catch (IOException e) {
-                c.setResponseCode(404);
-                c.setResponseMessage(e.getMessage());
-                c.setResponse(objectOrResourceNotFound(e.getMessage()));
+                c
+                    .setResponseCode(404)
+                    .setResponseMessage(e.getMessage())
+                    .setResponse(objectOrResourceNotFound(e.getMessage()))
+                    .completeResponse();
             }
         }
     }

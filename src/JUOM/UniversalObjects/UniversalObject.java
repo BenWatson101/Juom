@@ -74,6 +74,8 @@ public abstract class UniversalObject implements WrapMyselfUniversally{
     }
 
 
+
+
     //common format for a json:
     // {"class":"com.example.math.Calculator",
     // fields:{
@@ -130,7 +132,7 @@ public abstract class UniversalObject implements WrapMyselfUniversally{
         Object instance = clazz.getDeclaredConstructor().newInstance();
 
 
-        for (Field field : clazz.getDeclaredFields()) {
+        for (Field field : clazz.getFields()) {
             if (field.isAnnotationPresent(Universal.class)) {
                 field.setAccessible(true);
                 if (fields.has(field.getName())) {

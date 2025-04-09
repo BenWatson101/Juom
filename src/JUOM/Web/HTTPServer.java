@@ -5,16 +5,13 @@ import JUOM.WebServices.MonitoredThread;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
-public abstract class HTTPServer extends Page {
+public abstract class HTTPServer extends Router {
 
     private final int port;
     private final ServerSocket serverSocket;
     private boolean running = true;
-
-    private final Map<String, ServerObject> serverObjectMap = new HashMap<>();
 
     private String domainName;
 
@@ -24,17 +21,16 @@ public abstract class HTTPServer extends Page {
         this.domainName = "http://localhost:" + port;
     }
 
-    public final void start() {
+    public final HTTPServer start() {
         running = true;
 
 
         new MonitoredThread(() -> {
             while (running) {
-                try {
-                    Socket clientSocket = serverSocket.accept();
+                try (Socket clientSocket = serverSocket.accept()){
                     new MonitoredThread(() -> {
                         try (Client c = new Client(clientSocket)) {
-                            handleRequest(c, c.url());
+                            try { handleRequest(c, c.url()); } catch (CompleteClientResponse ignored) {}
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
@@ -55,38 +51,11 @@ public abstract class HTTPServer extends Page {
                 }
             }
         }).start();
+        return this;
     }
 
     public void stop() {
         running = false;
-    }
-
-    protected void handleRequest(Client c, String url) throws IOException {
-
-        if(!c.getHeader("Method")[0].equals("GET")) {
-            return;
-        }
-
-        if(url.equals("/")) {
-            c.setResponse(startingPage());
-            return;
-        }
-
-//        System.out.println("Server URL: " + url);
-//        System.out.println("Server next: " + nextURLPart(url));
-
-        if(nextURLPart(url).equals(getClass().getSimpleName())) {
-            url = truncateUrL(url);
-        }
-
-        ServerObject obj = serverObjectMap.get(nextURLPart(url));
-
-        if(obj != null) {
-            obj.handleURL(c, truncateUrL(url));
-
-        } else {
-            super.handleURL(c, url);
-        }
     }
 
     //domain name WITHOUT the slash at the end
@@ -95,13 +64,9 @@ public abstract class HTTPServer extends Page {
         return domainName + "/";
     }
 
-    protected final void addServerObject(ServerObject obj) {
-        serverObjectMap.put(obj.getClass().getSimpleName(), obj);
-        obj.parent = this;
-    }
-
-    protected final void setDomainName(String domainName) {
+    protected final HTTPServer setDomainName(String domainName) {
         this.domainName = domainName;
+        return this;
     }
 
 

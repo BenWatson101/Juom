@@ -39,11 +39,19 @@ public class MonitoredThread extends Thread {
         return instances.size();
     }
 
+    public static long getTotalMemory() {
+        return Runtime.getRuntime().totalMemory();
+    }
+
+    public static long getFreeMemory() {
+        return Runtime.getRuntime().freeMemory();
+    }
+
     public static void printInstancesAndMemory() {
         System.out.println("Total threads instances: " + getTotalInstances());
         System.out.println("Total allocated bytes: " + getTotalAllocatedBytes());
-        System.out.println("Total memory bytes: " + Runtime.getRuntime().totalMemory());
-        System.out.println("Free memory bytes: " + Runtime.getRuntime().freeMemory());
+        System.out.println("Total memory bytes: " + getTotalMemory());
+        System.out.println("Free memory bytes: " + getFreeMemory());
         System.out.print("\n");
     }
 

@@ -1,7 +1,5 @@
 package JUOM.Web;
 
-import java.io.*;
-
 import JUOM.JHTML.JHTML;
 
 public abstract class Page extends ServerObject {
@@ -14,7 +12,7 @@ public abstract class Page extends ServerObject {
 
 
     @Override
-    protected void handleURL(Client c, String url) throws IOException {
+    protected void handleURL(Client c, String url) throws CompleteClientResponse {
 
         if(url.equals("/")) {
             c.setResponse(startingPage());

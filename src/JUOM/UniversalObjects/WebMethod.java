@@ -8,5 +8,4 @@ import java.lang.annotation.Target;
 @Universal
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD})
-public @interface WebMethod {
-}
+public @interface WebMethod {}

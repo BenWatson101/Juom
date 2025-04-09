@@ -84,23 +84,27 @@ public final class Client implements AutoCloseable {
         return headers.get("URL")[0];
     }
 
-    public void addResponseHeader(String header, String value) {
+    public Client addResponseHeader(String header, String value) {
         LinkedList<String> values = responseHeaders.computeIfAbsent(header, k -> new LinkedList<>());
         values.add(value);
+        return this;
     }
 
-    public void setResponseHeaders(String header, String value) {
+    public Client setResponseHeaders(String header, String value) {
         LinkedList<String> values = new LinkedList<>();
         values.add(value);
         responseHeaders.put(header, values);
+        return this;
     }
 
-    public void setResponseCode(int code) {
+    public Client setResponseCode(int code) {
         responseCode = code;
+        return this;
     }
 
-    public void setResponseMessage(String message) {
+    public Client setResponseMessage(String message) {
         responseMessage = message;
+        return this;
     }
 
     public Hashtable<String, String> getCookies() {
@@ -118,55 +122,67 @@ public final class Client implements AutoCloseable {
         return cookies;
     }
 
-    public void setCookie(String name, String value) {
+    public Client setCookie(String name, String value) {
         String setCookieHeader = responseHeaders.get("Set-Cookie") == null ? "" : responseHeaders.get("Set-Cookie").get(0);
         setCookieHeader += name + "=" + value + "; ";
         responseHeaders.put("Set-Cookie", new LinkedList<>(List.of(setCookieHeader)));
+        return this;
     }
 
-    public void addCookieType(String type) {
+    public Client addCookieType(String type) {
         String setCookieHeader = responseHeaders.get("Set-Cookie") == null ? "" : responseHeaders.get("Set-Cookie").get(0);
         setCookieHeader += type + "; ";
         responseHeaders.put("Set-Cookie", new LinkedList<>(List.of(setCookieHeader)));
+        return this;
     }
 
-    public void setContent(String content) {
+    public Client setContent(String content) {
         this.content = content;
+        return this;
     }
 
-    public void setResponse(JHTML jhtml) {
+    public Client setResponse(JHTML jhtml) {
         setResponseHeaders("Content-Type", "text/html");
         setContent(jhtml.html());
+        return this;
     }
 
-    public void setResponse(UniversalObject obj) {
+    public Client setResponse(UniversalObject obj) {
         setResponseHeaders("Content-Type", "application/json");
         setContent(obj.json());
+        return this;
     }
 
-    public void setResponse() {
+    public Client setResponse() {
         setResponseHeaders("Content-Type", "text/plain");
         setContent("");
+        return this;
     }
 
-    public void setResponse(String content) {
+    public Client setResponse(String content) {
         setResponseHeaders("Content-Type", "text/plain");
         setContent(content);
+        return this;
     }
 
     public void setResponse(UniversalException e) {
         setResponse((UniversalObject) e);
     }
 
-    public void setResponse(byte[] content) {
+    public Client setResponse(byte[] content) {
         setResponseHeaders("Content-Type", "application/octet-stream");
         this.content = new String(content);
+        return this;
     }
 
-    public void setResponse(Resource resource) {
+    public Client setResponse(Resource resource) {
         setResponseHeaders("Content-Type", resource.mime());
         this.content = resource.content();
+        return this;
     }
 
+    public void completeResponse() throws CompleteClientResponse {
+        throw new CompleteClientResponse();
+    }
 
 }

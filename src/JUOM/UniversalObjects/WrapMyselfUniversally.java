@@ -68,7 +68,8 @@ public interface WrapMyselfUniversally {
 
         FileManager.writeFile(
                 simpleName + "_.js",
-                prototypeFile.toString().getBytes(), clazz);
+                prototypeFile.toString().getBytes(),
+                clazz);
     }
 
 }
