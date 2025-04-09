@@ -4,7 +4,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class MonitoredThread extends Thread {
+public final class MonitoredThread extends Thread implements Service {
 
     private static final CopyOnWriteArrayList<MonitoredThread> instances = new CopyOnWriteArrayList<>();
 
@@ -25,7 +25,7 @@ public class MonitoredThread extends Thread {
         }
     }
 
-    public static synchronized long getTotalAllocatedBytes() {
+    public synchronized long getTotalAllocatedBytes() {
         long total = 0;
         synchronized (instances) {
             for (MonitoredThread thread : instances) {
@@ -35,19 +35,24 @@ public class MonitoredThread extends Thread {
         return total;
     }
 
-    public static long getTotalInstances() {
+    public long getTotalInstances() {
         return instances.size();
     }
 
-    public static long getTotalMemory() {
+    public long getTotalMemory() {
         return Runtime.getRuntime().totalMemory();
     }
 
-    public static long getFreeMemory() {
+    public long getFreeMemory() {
         return Runtime.getRuntime().freeMemory();
     }
 
-    public static void printInstancesAndMemory() {
+    private long getTotalThreads() {
+        return Thread.activeCount();
+    }
+
+    public void printInstancesAndMemory() {
+        System.out.println("Total threads: " + getTotalThreads());
         System.out.println("Total threads instances: " + getTotalInstances());
         System.out.println("Total allocated bytes: " + getTotalAllocatedBytes());
         System.out.println("Total memory bytes: " + getTotalMemory());

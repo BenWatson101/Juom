@@ -39,11 +39,11 @@ public abstract class Router extends Page {
     }
 
     protected final Router addServerObject(ServerObject obj) {
-        if(ExistingServerObjects.containsKey(obj.getClass().getSimpleName())) {
+        if(ExistingServerObjects.containsKey(obj.getClass().getName())) {
             throw new IllegalArgumentException("Server object already exists");
         }
         serverObjectMap.put(obj.getClass().getSimpleName(), obj);
-        ExistingServerObjects.put(obj.getClass().getSimpleName(), obj);
+        ExistingServerObjects.put(obj.getClass().getName(), obj);
         obj.parent = this;
         return this;
     }
