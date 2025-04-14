@@ -19,6 +19,8 @@ public final class Client implements AutoCloseable {
     private String responseMessage = "OK";
     private String content = "";
 
+    private String body = "";
+
 
     public Client(Socket socket) throws IOException {
         this.socket = socket;
@@ -26,6 +28,8 @@ public final class Client implements AutoCloseable {
         this.out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
 
         String line;
+
+        boolean bodySection = false;
 
         if(!(line = in.readLine()).isEmpty()) {
             String[] parts = line.split(" ");
@@ -37,18 +41,27 @@ public final class Client implements AutoCloseable {
         }
 
         while (!(line = in.readLine()).isEmpty()) {
-            String[] parts = line.split(":", 2);
-            if (parts.length == 2) {
-                String headerName = parts[0].trim();
-                String headerValue = parts[1].trim();
-                // Special handling for headers that shouldn't be split
-                if (!headerName.equalsIgnoreCase("Set-Cookie") &&
-                    !headerName.equalsIgnoreCase("Cookie")) {
-                    headers.put(headerName, headerValue.split(","));
-                } else {
-                    headers.put(headerName, new String[]{headerValue});
-                }
+            if (line.trim().isEmpty()) {
+                bodySection = true;
+                continue;
             }
+            if(!bodySection) {
+                String[] parts = line.split(":", 2);
+                if (parts.length == 2) {
+                    String headerName = parts[0].trim();
+                    String headerValue = parts[1].trim();
+                    // Special handling for headers that shouldn't be split
+                    if (!headerName.equalsIgnoreCase("Set-Cookie") &&
+                            !headerName.equalsIgnoreCase("Cookie")) {
+                        headers.put(headerName, headerValue.split(","));
+                    } else {
+                        headers.put(headerName, new String[]{headerValue});
+                    }
+                }
+            } else {
+                body = line + "\n";
+            }
+
         }
     }
 
@@ -80,8 +93,16 @@ public final class Client implements AutoCloseable {
         return headers.get(header);
     }
 
-    public String url() {
+    public String getURL() {
         return headers.get("URL")[0];
+    }
+
+    public String getMethod() {
+        return headers.get("Method")[0];
+    }
+
+    public String getBody() {
+        return body;
     }
 
     public Client addResponseHeader(String header, String value) {
@@ -104,6 +125,13 @@ public final class Client implements AutoCloseable {
 
     public Client setResponseMessage(String message) {
         responseMessage = message;
+        return this;
+    }
+
+
+
+    public Client setContent(String content) {
+        this.content = content;
         return this;
     }
 
@@ -130,14 +158,18 @@ public final class Client implements AutoCloseable {
     }
 
     public Client addCookieType(String type) {
-        String setCookieHeader = responseHeaders.get("Set-Cookie") == null ? "" : responseHeaders.get("Set-Cookie").get(0);
-        setCookieHeader += type + "; ";
-        responseHeaders.put("Set-Cookie", new LinkedList<>(List.of(setCookieHeader)));
-        return this;
-    }
-
-    public Client setContent(String content) {
-        this.content = content;
+        responseHeaders.compute("Set-Cookie", (key, values) -> {
+            if (values == null || values.isEmpty()) {
+                values = new LinkedList<>();
+                values.add(type + ";");
+            } else {
+                String currentHeader = values.get(0);
+                if (!currentHeader.contains(type + ";")) {
+                    values.set(0, currentHeader + type + "; ");
+                }
+            }
+            return values;
+        });
         return this;
     }
 
@@ -171,13 +203,13 @@ public final class Client implements AutoCloseable {
 
     public Client setResponse(byte[] content) {
         setResponseHeaders("Content-Type", "application/octet-stream");
-        this.content = new String(content);
+        setContent(new String(content));
         return this;
     }
 
     public Client setResponse(Resource resource) {
         setResponseHeaders("Content-Type", resource.mime());
-        this.content = resource.content();
+        setContent(resource.content());
         return this;
     }
 

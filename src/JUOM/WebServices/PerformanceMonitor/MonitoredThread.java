@@ -1,17 +1,18 @@
-package JUOM.WebServices;
+package JUOM.WebServices.PerformanceMonitor;
+
+import JUOM.WebServices.Services;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public final class MonitoredThread extends Thread implements Service {
+public final class MonitoredThread extends Thread {
 
     private static final CopyOnWriteArrayList<MonitoredThread> instances = new CopyOnWriteArrayList<>();
 
     public MonitoredThread(Runnable task) {
         super(task);
         instances.add(this);
-        //System.out.println("Created new thread: " + this.getName());
     }
 
 
@@ -68,4 +69,6 @@ public final class MonitoredThread extends Thread implements Service {
             instances.remove(this);
         }
     }
+
+
 }

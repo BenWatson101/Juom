@@ -186,7 +186,7 @@ public abstract class ServerObject extends UniversalObject {
 
     protected abstract JHTML objectOrResourceNotFound(String message);
 
-    protected void handleURL(Client c, String url) throws CompleteClientResponse{
+    protected void handleURL(Client c, String url) throws CompleteClientResponse {
         if(nextURLPart(url).isEmpty()) {
             parseParams(c, url);
         } else {
@@ -205,4 +205,6 @@ public abstract class ServerObject extends UniversalObject {
     protected String path() {
         return this.parent.path() + this.getClass().getSimpleName()  + "/";
     }
+
+    protected void build
 }

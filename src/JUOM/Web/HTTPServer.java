@@ -1,11 +1,10 @@
 package JUOM.Web;
 
-import JUOM.WebServices.MonitoredThread;
+import JUOM.WebServices.PerformanceMonitor.MonitoredThread;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.*;
 
 public abstract class HTTPServer extends Router {
 
@@ -30,7 +29,7 @@ public abstract class HTTPServer extends Router {
                 try (Socket clientSocket = serverSocket.accept()){
                     new MonitoredThread(() -> {
                         try (Client c = new Client(clientSocket)) {
-                            try { handleRequest(c, c.url()); } catch (CompleteClientResponse ignored) {}
+                            try { handleRequest(c, c.getURL()); } catch (CompleteClientResponse ignored) {}
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
