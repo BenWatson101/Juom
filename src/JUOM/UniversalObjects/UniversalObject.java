@@ -129,6 +129,9 @@ public abstract class UniversalObject implements WrapMyselfUniversally{
 
 
         Class<?> clazz = Class.forName(className);
+        if (!UniversalObject.class.isAssignableFrom(clazz)) {
+            throw new IllegalArgumentException("Class " + className + " does not extend UniversalObject");
+        }
         Object instance = clazz.getDeclaredConstructor().newInstance();
 
 

@@ -114,7 +114,7 @@ public abstract class ServerObject extends UniversalObject {
                     }
                 }
             } else {
-                for (Method method : this.getClass().getDeclaredMethods()) {
+                for (Method method : this.getClass().getMethods()) {
                     if (method.getName().equals(methodName)
                         && method.getParameterCount() == objects.length
                         && method.isAnnotationPresent(WebMethod.class)) {
@@ -206,5 +206,7 @@ public abstract class ServerObject extends UniversalObject {
         return this.parent.path() + this.getClass().getSimpleName()  + "/";
     }
 
-    protected void build
+    protected final void build() {
+
+    }
 }
