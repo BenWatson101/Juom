@@ -4,6 +4,7 @@ import JUOM.UniversalObjects.Universal;
 import JUOM.UniversalObjects.UniversalObject;
 import JUOM.UniversalObjects.WrapMyselfUniversally;
 import JUOM.WebServices.FileManager;
+import JUOM.WebServices.Services;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -27,7 +28,8 @@ public abstract class JHTML implements WrapMyselfUniversally {
         JHTML current = this;
         while(current != null) {
             html.append(current.htmlContent());
-            current = current.first;
+            current = current.first
+            ;
         }
         return html.toString();
     }
@@ -53,7 +55,7 @@ public abstract class JHTML implements WrapMyselfUniversally {
 //        System.out.println("Relative path: " + clazz.getResourceAsStream(path));;
 //        System.out.println(clazz);
 
-        byte[] bytes = FileManager.readFile(path, clazz);
+        byte[] bytes = Services.getService(FileManager.class).readFile(path, clazz);
 
         if (bytes == null) {
             throw new IOException("File not found");
@@ -121,8 +123,8 @@ public abstract class JHTML implements WrapMyselfUniversally {
     }
 
     public abstract static class Counter {
-        private int start;
-        private int end;
+        private final int start;
+        private final int end;
 
         public Counter(int start, int end) {
             this.start = start;

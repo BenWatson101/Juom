@@ -6,6 +6,7 @@ import java.util.Queue;
 
 public class URL {
     Queue<URLComponent> components = new LinkedList<>();
+    private URLComponent popped = null;
 
     public URL(String url) {
         String[] parts = url.split("/");
@@ -31,7 +32,15 @@ public class URL {
     }
 
     public URL pop() {
-        components.poll();
+        popped = components.poll();
+        return this;
+    }
+
+    public URL unpop() {
+        if (popped != null) {
+            components.add(popped);
+            popped = null;
+        }
         return this;
     }
 

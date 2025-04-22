@@ -1,5 +1,7 @@
 package JUOM.WebServices.ILoggers;
 
-public interface ILogger {
+import JUOM.WebServices.Services;
+
+public interface ILogger extends Services {
     public void log(String message);
 }

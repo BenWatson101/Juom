@@ -1,6 +1,7 @@
 package JUOM.UniversalObjects;
 
 import JUOM.WebServices.FileManager;
+import JUOM.WebServices.Services;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -66,7 +67,8 @@ public interface WrapMyselfUniversally {
         }
         prototypeFile.append("\n\n\n");
 
-        FileManager.writeFile(
+        Services.getService(FileManager.class)
+                .writeFile(
                 simpleName + "_.js",
                 prototypeFile.toString().getBytes(),
                 clazz);

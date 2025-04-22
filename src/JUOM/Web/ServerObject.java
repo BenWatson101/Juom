@@ -5,6 +5,8 @@ import JUOM.UniversalObjects.UniversalException;
 import JUOM.UniversalObjects.UniversalObject;
 import JUOM.UniversalObjects.WebMethod;
 import JUOM.WebServices.FileManager;
+import JUOM.WebServices.ILoggers.ILogger;
+import JUOM.WebServices.Services;
 
 import java.io.*;
 import java.lang.reflect.Constructor;
@@ -18,6 +20,8 @@ import static JUOM.Web.Resource.*;
 public abstract class ServerObject extends UniversalObject {
 
     protected ServerObject parent = null;
+
+    protected final ILogger console = Services.getService(ILogger.class);
 
     protected final String nextURLPart(String url) {
 

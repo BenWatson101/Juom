@@ -1,6 +1,7 @@
 package JUOM;
 
 import JUOM.WebServices.JarChecker;
+import JUOM.WebServices.Services;
 
 import java.io.*;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ public class ObjectManager {
             if(args.length < 1) {
                 System.out.println("Usage: extract-required <path-to-src>");
             } else {
-                if (JarChecker.isRunningFromJar()) {
+                if (Services.getService(JarChecker.class).isRunningFromJar()) {
 
                     String src = new File(System.getProperty("user.dir"), args[0]).getAbsolutePath();
                     if (!new File(src).exists()) {
@@ -64,6 +65,9 @@ public class ObjectManager {
     }
 
     public static void main(String[] args) {
+
+        Services.addService(new JarChecker());
+
         if (args.length == 0) {
             System.out.println("No command provided. Type 'help' for available commands.");
             return;

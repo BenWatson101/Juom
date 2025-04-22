@@ -3,9 +3,9 @@ package JUOM.WebServices;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class FileManager {
+public class FileManager implements Services {
 
-    public static byte[] readFile(String path, Class<?> clazz) throws IOException {
+    public byte[] readFile(String path, Class<?> clazz) throws IOException {
         try (InputStream e = clazz.getResourceAsStream(path)) {
             if (e == null) {
                 return null;
@@ -14,7 +14,7 @@ public class FileManager {
         }
     }
 
-    public static String[] getAllFiles(String path, Class<?> clazz) throws IOException {
+    public String[] getAllFiles(String path, Class<?> clazz) throws IOException {
         if(clazz.getResource(path) == null) {
             throw new IOException("Resource not found: " + path);
         }
@@ -25,7 +25,7 @@ public class FileManager {
                 .toArray(String[]::new);
     }
 
-    public static void writeFile(String path, byte[] bytes, Class<?> clazz) throws IOException {
+    public void writeFile(String path, byte[] bytes, Class<?> clazz) throws IOException {
         if(clazz.getResource(path) == null) {
             throw new IOException("Resource not found: " + path);
         }
@@ -34,4 +34,12 @@ public class FileManager {
         java.nio.file.Files.write(resourcePath, bytes);
     }
 
+    @Override
+    public void start() throws Exception {}
+
+    @Override
+    public void stop() {}
+
+    @Override
+    public void execute() {}
 }

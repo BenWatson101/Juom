@@ -1,6 +1,10 @@
 package JUOM.Web;
 
+import JUOM.WebServices.ILoggers.ILogger;
+import JUOM.WebServices.ILoggers.PrintLogger;
 import JUOM.WebServices.PerformanceMonitor.MonitoredThread;
+import JUOM.WebServices.PerformanceMonitor.PerformanceMonitor;
+import JUOM.WebServices.Services;
 
 import java.io.*;
 import java.net.ServerSocket;
@@ -44,7 +48,7 @@ public abstract class HTTPServer extends Router {
             while (running) {
                 try {
                     Thread.sleep(5000);
-                    MonitoredThread.printInstancesAndMemory();
+                    Services.getService(ILogger.class).log(Services.getService(PerformanceMonitor.class).InstancesAndMemory());
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
