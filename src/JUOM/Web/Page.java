@@ -12,10 +12,10 @@ public abstract class Page extends ServerObject {
 
 
     @Override
-    protected void handleURL(Client c, String url) throws CompleteClientResponse {
+    protected void handleURL(Client c, URL url) throws CompleteClientResponse {
 
-        if(url.equals("/")) {
-            c.setResponse(startingPage());
+        if(url.path().equals("/")) {
+            c.setResponse(startingPage()).completeResponse();
         } else {
             super.handleURL(c, url);
         }

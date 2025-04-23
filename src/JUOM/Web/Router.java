@@ -3,6 +3,7 @@ package JUOM.Web;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Objects;
 
 public abstract class Router extends Page {
 
@@ -10,29 +11,20 @@ public abstract class Router extends Page {
 
     private final Map<String, ServerObject> serverObjectMap = new HashMap<>();
 
-    protected void handleRequest(Client c, String url) throws CompleteClientResponse {
+    protected void handleRequest(Client c, URL url) throws CompleteClientResponse {
 
-        if(!c.getHeader("Method")[0].equals("GET")) {
-            return;
+        if(url.path().isEmpty()) {
+            c.setResponse(startingPage()).completeResponse();
         }
 
-        if(url.equals("/")) {
-            c.setResponse(startingPage());
-            return;
+        if(Objects.requireNonNull(url.next()).getUrlString().equals(getClass().getSimpleName())) {
+            url.poll();
         }
 
-//        System.out.println("Server URL: " + url);
-//        System.out.println("Server next: " + nextURLPart(url));
-
-        if(nextURLPart(url).equals(getClass().getSimpleName())) {
-            url = truncateUrL(url);
-        }
-
-        ServerObject obj = serverObjectMap.get(nextURLPart(url));
+        ServerObject obj = serverObjectMap.get(Objects.requireNonNull(url.next()).getUrlString());
 
         if(obj != null) {
-            obj.handleURL(c, truncateUrL(url));
-
+            obj.handleURL(c, url.poll());
         } else {
             super.handleURL(c, url);
         }
@@ -45,6 +37,13 @@ public abstract class Router extends Page {
         serverObjectMap.put(obj.getClass().getSimpleName(), obj);
         ExistingServerObjects.put(obj.getClass().getName(), obj);
         obj.parent = this;
+        return this;
+    }
+
+    protected final Router addServerObjects(ServerObject[] obj) {
+        for (ServerObject serverObject : obj) {
+            addServerObject(serverObject);
+        }
         return this;
     }
 }

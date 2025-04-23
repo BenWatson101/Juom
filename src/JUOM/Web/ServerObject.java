@@ -1,7 +1,6 @@
 package JUOM.Web;
 
 import JUOM.JHTML.JHTML;
-import JUOM.UniversalObjects.UniversalException;
 import JUOM.UniversalObjects.UniversalObject;
 import JUOM.UniversalObjects.WebMethod;
 import JUOM.WebServices.FileManager;
@@ -11,7 +10,7 @@ import JUOM.WebServices.Services;
 import java.io.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.net.URLDecoder;
+import java.lang.reflect.Parameter;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -19,191 +18,88 @@ import static JUOM.Web.Resource.*;
 
 public abstract class ServerObject extends UniversalObject {
 
-    protected ServerObject parent = null;
+    ServerObject parent = null;
 
     protected final ILogger console = Services.getService(ILogger.class);
+    protected final FileManager fileManager = Services.getService(FileManager.class);
 
-    protected final String nextURLPart(String url) {
-
-        String[] parts = url.startsWith("?") ? url.split("/") : url.split("[/?]");
-        return parts.length > 1 ? parts[1] : "";
-    }
-
-    protected final String truncateUrL(String url) {
-        //System.out.println("Untruncated URL: " + url);
-        if(url.charAt(url.length() - 1) != '/') {
-            url += "/";
-        }
-        int q = url.indexOf("?");
-        int s = url.indexOf("/");
-        if(q > s) {
-            url = '?'+ url.split("[/?]", 3)[2];
-        } else {
-            url = '/'+ url.split("[/?]", 3)[2];
+    private static boolean paramsMatch(Map<String, Object> dict, Parameter[] params) {
+        if(dict.size() != params.length) {
+            return false;
         }
 
-        if(url.charAt(url.length() - 1) != '/') {
-            url += "/";
-        }
-
-        return url;
-    }
-
-    protected final String processUrl(String url) {
-
-        if (url.equals("/")) {
-            return "/";
-        }
-
-        List<String> splits = new LinkedList<>(Arrays.asList(url.split("/")));
-
-        for(int i = 0; i < splits.size(); i++) {
-
-            switch (splits.get(i)) {
-                case ".." -> {
-                    splits.remove(i);
-                    splits.remove(i - 1);
-                    i -= 2;
-                }
-                case "." -> {
-                    splits.remove(i);
-                    i--;
-                }
-                case "..." -> {
-                    splits.clear();
-                    splits.add("");
-                    i = -1;
-                }
-                default -> splits.set(i, URLDecoder.decode(splits.get(i), StandardCharsets.UTF_8));
+        for (Parameter param : params) {
+            if (!dict.containsKey(param.getName())) {
+                return false;
             }
         }
-        return String.join("/", splits);
+
+        return true;
     }
 
+    protected final UniversalObject executeMethod(String methodName, Map<String, Object> params) throws IOException {
 
-
-    protected final void parseParams(Client c, String paramString) {
-
-        try {
-
-            System.out.println("Params: " + paramString);
-
-            //paramString = URLDecoder.decode(paramString.substring(1, paramString.length() - 1), StandardCharsets.UTF_8);
-            paramString = paramString.substring(1, paramString.length() - 1);
-
-            //System.out.println("Params2: " + paramString);
-
-            String[] paramsAndName = paramString.split("\\Q<&>\\E", 2);
-            String methodName = paramsAndName[0];
-
-
-            String[] params = paramsAndName.length > 1 ? paramsAndName[1].split("\\Q<&>\\E") : new String[0];
-
-            if(params.length == 1 && params[0].isEmpty()) {
-                params = new String[0];
-            }
-
-            Object[] objects = UniversalObject.parse(params);
-
-            if(methodName.equals(this.getClass().getName())) {
-                Constructor<?>[] constructors = this.getClass().getConstructors();
-                for (Constructor<?> constructor : constructors) {
-                    if(constructor.getParameterCount() == objects.length
-                        && constructor.isAnnotationPresent(WebMethod.class)) {
-
-                        try {
-                            c.setResponse((UniversalObject) constructor.newInstance(objects));
-                            return;
-                        } catch (Exception ignored) {}
+        if(methodName.equals(this.getClass().getName())) {
+            Constructor<?>[] constructors = this.getClass().getConstructors();
+            for (Constructor<?> constructor : constructors) {
+                if(paramsMatch(params, constructor.getParameters())) {
+                    try {
+                        constructor.setAccessible(true);
+                        return UniversalObject.convert(constructor.newInstance(params.values().toArray()));
+                    } catch (Exception ignored) {
+                        break;
                     }
                 }
-            } else {
-                for (Method method : this.getClass().getMethods()) {
-                    if (method.getName().equals(methodName)
-                        && method.getParameterCount() == objects.length
+            }
+        } else {
+            for (Method method : this.getClass().getMethods()) {
+                if (method.getName().equals(methodName)
+                        && paramsMatch(params, method.getParameters())
                         && method.isAnnotationPresent(WebMethod.class)) {
 
-                        try {
-                            method.setAccessible(true);
-                            c.setResponse(UniversalObject.convert(method.invoke(this, objects)));
-                            return;
-                        } catch (Exception ignored) {}
+                    try {
+                        method.setAccessible(true);
+                        return UniversalObject.convert(method.invoke(this, params.values().toArray()));
+                    } catch (Exception ignored) {
+                        break;
                     }
                 }
             }
-
-            c.setResponse(new UniversalException("Method called " + paramsAndName[0] +  "() for page "
-                    + this.getClass().getName() + " not found"));
-
-        } catch (Exception e) {
-            c.setResponse(new UniversalException("Invalid parameters when executing page methods for page "
-                    + this.getClass().getName() + ": " + e.getMessage()));
         }
+        throw new IOException("Method not found");
     }
 
 
 
 
-    protected final Resource handleResource(String path) throws IOException {
+    protected final Resource handleResource(URL path) throws IOException {
 
-        if(path.charAt(path.length() - 1) == '/') {
-            path = path.substring(0, path.length() - 1);
-        }
-
-        System.out.println("Path: " + path);
-
-        if(path.charAt(0) == '.') {
-            throw new IOException("Invalid path");
-        }
-
-        path = path.substring(1);
-
-        if(path.contains(".")) {
-            String[] split = path.split("\\.");
-            String extension = split[split.length - 1];
-
-            String mime = extensionToMIME.get(extension);
-
-            if(mime == null) {
-                throw new IOException("Unknown file extension");
-            }
-
-            if (path.contains("..") || new File(path.substring(1)).isAbsolute()) {
-                throw new IOException("Invalid path");
-            }
-
-            //System.out.println(path);
-
-            byte[] bytes = FileManager.readFile(path, this.getClass());
-
+        if(path.isFile()) {
+            byte[] bytes = fileManager.readFile(path.path(), this.getClass());
             if (bytes == null) {
-                return new Resource("Failed to load content", extensionToMIME.get("json"));
+                return new Resource("Failed to load content", extensionToMIME.get("txt"));
             }
-
-            return new Resource(new String(bytes, StandardCharsets.UTF_8), mime);
-
+            return new Resource(new String(bytes, StandardCharsets.UTF_8), extensionToMIME.get(path.extension()));
         } else {
-            throw new IOException("No file extension");
+            throw new IOException("Invalid path");
         }
     }
 
 
     protected abstract JHTML objectOrResourceNotFound(String message);
 
-    protected void handleURL(Client c, String url) throws CompleteClientResponse {
-        if(nextURLPart(url).isEmpty()) {
-            parseParams(c, url);
-        } else {
-            try {
-                c.setResponse(handleResource(url));
-            } catch (IOException e) {
-                c
-                    .setResponseCode(404)
-                    .setResponseMessage(e.getMessage())
-                    .setResponse(objectOrResourceNotFound(e.getMessage()))
-                    .completeResponse();
+    protected void handleURL(Client c, URL url) throws CompleteClientResponse {
+
+        try {
+            c.setResponse(handleResource(url)).completeResponse();
+        } catch (IOException ignored) {}
+
+        try {
+            URLComponent next = url.next();
+            if(next == null) {
+                c.setResponse(executeMethod(next.getComponent(), url.peek().getParameters())).completeResponse();
             }
-        }
+        } catch (IOException ignored) {}
     }
 
     protected String path() {

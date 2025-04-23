@@ -5,7 +5,7 @@ import java.util.Hashtable;
 
 public record Resource(String content, String mime) {
 
-    public static Dictionary<String, String> extensionToMIME = new Hashtable<>();
+    public final static Dictionary<String, String> extensionToMIME = new Hashtable<>();
 
     static {
         extensionToMIME.put("html", "text/html");
@@ -16,6 +16,13 @@ public record Resource(String content, String mime) {
         extensionToMIME.put("gif", "image/gif");
         extensionToMIME.put("ico", "image/x-icon");
         extensionToMIME.put("json", "application/json");
+        extensionToMIME.put("xml", "application/xml");
+        extensionToMIME.put("svg", "image/svg+xml");
+        extensionToMIME.put("txt", "text/plain");
+        extensionToMIME.put("pdf", "application/pdf");
+        extensionToMIME.put("zip", "application/zip");
+        extensionToMIME.put("mp4", "video/mp4");
+        extensionToMIME.put("mp3", "audio/mpeg");
     }
 
     public Resource {

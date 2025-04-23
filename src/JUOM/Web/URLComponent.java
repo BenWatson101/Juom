@@ -2,37 +2,37 @@ package JUOM.Web;
 
 import JUOM.UniversalObjects.UniversalObject;
 
-import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Map;
 
 public final class URLComponent {
 
+    private final String urlString;
     private final String component;
-    private final String page;
-    private Hashtable<String, UniversalObject> parameters = new Hashtable<>();
+    private Hashtable<String, Object> parameters = new Hashtable<>();
 
     private final static String HALF_DELIMITER = "[?]";
     private final static String DELIMITER = "&";
     private final static String EQUALS = "=";
-    private boolean onlyPage = true;
+    private boolean onlyComponent = true;
 
     private int numberOfParameters = 0;
 
-    public URLComponent(String component) {
-        this.component = component;
+    URLComponent(String component) {
+        this.urlString = component;
         String[] parts = component.split(HALF_DELIMITER);
 
-        page = parts[0];
+        this.component = parts[0];
 
         if(parts.length > 1) {
-            onlyPage = false;
+            onlyComponent = false;
 
             try {
                 String[] parameters = parts[0].split(DELIMITER);
                 for (String parameter : parameters) {
                     String[] keyValue = parameter.split(EQUALS);
                     if (keyValue.length == 2) {
-                        this.parameters.put(keyValue[0], (UniversalObject) UniversalObject.parse(keyValue[1]));
+                        this.parameters.put(keyValue[0], UniversalObject.parse(keyValue[1]));
                         numberOfParameters++;
                     }
                 }
@@ -43,23 +43,28 @@ public final class URLComponent {
         }
     }
 
-    public String getComponent() {
-        return component;
+    public String getUrlString() {
+        return urlString;
     }
 
-    public Dictionary<String, UniversalObject> getParameters() {
+    public Map<String, Object> getParameters() {
         return new Hashtable<>(parameters);
     }
 
-    public boolean isOnlyPage() {
-        return onlyPage;
+    public boolean isOnlyComponent() {
+        return onlyComponent;
     }
 
     public int getNumberOfParameters() {
         return numberOfParameters;
     }
 
-    public String getPage() {
-        return page;
+    public String getComponent() {
+        return component;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 }

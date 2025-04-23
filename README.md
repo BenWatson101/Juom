@@ -4,7 +4,7 @@ A lightweight, fullstack web framework that seamlessly integrates Java and JavaS
 
 ## Features
 
-- **Page-Centric Architecture**: Each page handles its own requests, moving away from traditional MVC patterns
+- **Modular, Server-Object-Based Framework with Hierarchical Routing**: Each page handles its own requests, moving away from traditional MVC and Pages
 - **Universal Objects**: Share objects and their functionality between frontend and backend
 - **Server-Side Rendering**: Built-in support for server-side rendered content
 - **Monitored Threading**: Built-in thread monitoring and memory management

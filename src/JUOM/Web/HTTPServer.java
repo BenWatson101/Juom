@@ -33,7 +33,7 @@ public abstract class HTTPServer extends Router {
                 try (Socket clientSocket = serverSocket.accept()){
                     new MonitoredThread(() -> {
                         try (Client c = new Client(clientSocket)) {
-                            try { handleRequest(c, processUrl(c.getURL())); } catch (CompleteClientResponse ignored) {}
+                            try { handleRequest(c, new URL(c.getURL())); } catch (CompleteClientResponse ignored) {}
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
